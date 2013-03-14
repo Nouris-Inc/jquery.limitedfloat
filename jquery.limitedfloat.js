@@ -2,7 +2,7 @@
  * Limited Float Box  version 0.1
  * (jQuery plugin) 
  * 
- * URL       : 
+ * URL       : https://github.com/STatsu/jquery.limitedfloat
  * Author    : STatsu (http://atticfactory.com/)
  * Copyright : copyright (c) 2013 atticfactory
  * License   : licensed under the MIT licenses.

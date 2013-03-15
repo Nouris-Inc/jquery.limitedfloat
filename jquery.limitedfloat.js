@@ -1,5 +1,5 @@
 /*
- * Limited Float Box  version 0.1
+ * Limited Float Box  version 0.2
  * (jQuery plugin) 
  * 
  * URL       : https://github.com/STatsu/jquery.limitedfloat
@@ -10,41 +10,72 @@
 
 (function($) {
 
-  $.fn.limitedfloat = function(exOptions){
+	$.fn.limitedfloat = function(exOptions){
 
 		var options = {
-			stopperID: ''
+			wrapperID: ''
 		};
 		$.extend(options, exOptions);
 
 		var _this = this;
 		var win = $(window);
 		var baseTop = this.offset().top;
-		var baseHeight = _this.outerHeight();
-		var baseMarginTop = parseInt(this.css("marginTop"), 10);
-		var baseMarginBottom = parseInt(this.css("marginBottom"), 10);
-		var stopper = options.stopperID ? $('#' + options.stopperID) : null;
-		var stopperTop = stopper && stopper.length ? stopper.offset().top : 0;
-		var stopperMarginTop = stopper && stopper.length ? parseInt(stopper.css("marginTop"), 10) : 0;
+		var baseHeight = _this.outerHeight() + parseInt(this.css("marginBottom"), 10);
+		var baseLeft = this.offset().left;
+		var wrapper = options.wrapperID ? $('#' + options.wrapperID) : null;
+		
+		if(wrapper.css('position') != 'relative' && wrapper.css('position') != 'absolute'){
+			wrapper.css('position', 'relative');
+		}
+
+		var wrapperTop  = wrapper.offset().top;
+		var wrapperLeft = wrapper.offset().left;
+		var wrapperBottom = wrapper.offset().top + wrapper.height();
+		var offsetLeft = baseLeft - wrapperLeft;
+		var resized = false;
 
 		var follow = function(){
-			var marginY = win.scrollTop() - baseTop;
-			var boxBottom = _this.offset().top + baseHeight;
-			var boxBottomResult = marginY + baseTop + baseHeight + baseMarginBottom + stopperMarginTop;
-	
-			if(stopperTop && boxBottomResult > stopperTop){
-				marginY -= boxBottomResult - stopperTop ;
+			var currentTop = win.scrollTop();
+			var currentPos = _this.css('position');
+		
+			var position = 'static';
+			if(currentTop >= baseTop){
+				position = currentTop + baseHeight <= wrapperBottom ? 'fixed': 'absolute';
 			}
-	
-			if(marginY > 0){
-				_this.css("marginTop", marginY + baseMarginTop);
-			}else if(marginY != baseMarginTop){
-				_this.css("marginTop", baseMarginTop);
+		
+			if(!resized && currentPos == position){
+				return;
 			}
-		}
+
+			if(position == 'fixed'){
+				_this.css({
+					position: "fixed",
+					left: baseLeft,
+					top: 0
+				});
+			}else if(position == 'absolute'){
+				_this.css({
+					position: "absolute",
+					left: baseLeft - wrapperLeft,
+					top: wrapperBottom - baseHeight - wrapperTop
+				});
+			}else{
+				_this.css({
+					position: "static"
+				});
+			}
+			resized = false;
+		};
+
+		var resize = function(){
+			resized = true;
+			wrapperLeft = wrapper.offset().left;
+			baseLeft = wrapperLeft + offsetLeft;
+			follow();
+		};
 
 		win.on("load",   follow);
 		win.on("scroll", follow);
-		win.on("resize", follow);
+		win.on("resize", resize);
 	};
 })(jQuery);
